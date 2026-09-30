@@ -9,13 +9,29 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) encargado de gestionar las operaciones
+ * relacionadas con los usuarios del sistema VEHICONTROL.
+ *
+ * Esta clase permite realizar operaciones de autenticación,
+ * consulta, creación, actualización, validación y eliminación
+ * de usuarios almacenados en la base de datos.
+ *
+ * @author Duvan Arias
+ */
 public class UsuarioDAO {
 
-
-    // =========================================================
-    // AUTENTICAR
-    // =========================================================
-
+    /**
+     * Autentica un usuario utilizando su correo y contraseña.
+     *
+     * Solamente se permite el acceso a usuarios cuyo estado
+     * se encuentre establecido como "activo".
+     *
+     * @param correo correo electrónico del usuario
+     * @param password contraseña del usuario
+     * @return objeto Usuario si las credenciales son correctas;
+     *         null si no existe un usuario activo con esas credenciales
+     */
     public Usuario autenticar(String correo, String password) {
 
         String sql = """
@@ -31,6 +47,7 @@ public class UsuarioDAO {
             PreparedStatement ps = conexion.prepareStatement(sql)
         ) {
 
+            // Asigna las credenciales a los parámetros de la consulta.
             ps.setString(1, correo);
             ps.setString(2, password);
 
@@ -38,6 +55,7 @@ public class UsuarioDAO {
 
                 if (rs.next()) {
 
+                    // Construye el objeto Usuario con los datos encontrados.
                     Usuario usuario = new Usuario();
 
                     usuario.setId(rs.getInt("id"));
@@ -63,11 +81,14 @@ public class UsuarioDAO {
         return null;
     }
 
-
-    // =========================================================
-    // LISTAR
-    // =========================================================
-
+    /**
+     * Obtiene todos los usuarios registrados en el sistema.
+     *
+     * Los usuarios se ordenan de forma descendente utilizando
+     * su identificador.
+     *
+     * @return lista de usuarios registrados
+     */
     public List<Usuario> listar() {
 
         List<Usuario> lista = new ArrayList<>();
@@ -84,6 +105,7 @@ public class UsuarioDAO {
             ResultSet rs = ps.executeQuery()
         ) {
 
+            // Recorre los registros obtenidos de la base de datos.
             while (rs.next()) {
 
                 Usuario usuario = new Usuario();
@@ -110,11 +132,16 @@ public class UsuarioDAO {
         return lista;
     }
 
-
-    // =========================================================
-    // VERIFICAR CORREO
-    // =========================================================
-
+    /**
+     * Verifica si existe un usuario registrado con un correo
+     * determinado.
+     *
+     * La comparación elimina espacios y no diferencia entre
+     * mayúsculas y minúsculas.
+     *
+     * @param correo correo que se desea verificar
+     * @return true si el correo ya existe; false en caso contrario
+     */
     public boolean existeCorreo(String correo) {
 
         String sql = """
@@ -151,11 +178,18 @@ public class UsuarioDAO {
         return false;
     }
 
-
-    // =========================================================
-    // VERIFICAR CORREO EXCEPTO EL USUARIO ACTUAL
-    // =========================================================
-
+    /**
+     * Verifica si existe un correo registrado por otro usuario.
+     *
+     * Este método se utiliza principalmente durante la edición
+     * de usuarios para permitir que el usuario conserve su propio
+     * correo electrónico.
+     *
+     * @param correo correo que se desea verificar
+     * @param id identificador del usuario que se debe excluir
+     * @return true si el correo pertenece a otro usuario;
+     *         false en caso contrario
+     */
     public boolean existeCorreoExceptoId(
             String correo,
             int id) {
@@ -196,11 +230,12 @@ public class UsuarioDAO {
         return false;
     }
 
-
-    // =========================================================
-    // CONTAR ADMINISTRADORES
-    // =========================================================
-
+    /**
+     * Cuenta la cantidad de usuarios que tienen asignado
+     * el rol de administrador.
+     *
+     * @return cantidad de administradores registrados
+     */
     public int contarAdministradores() {
 
         String sql = """
@@ -232,11 +267,13 @@ public class UsuarioDAO {
         return 0;
     }
 
-
-    // =========================================================
-    // INSERTAR
-    // =========================================================
-
+    /**
+     * Inserta un nuevo usuario en la base de datos.
+     *
+     * @param usuario objeto Usuario con los datos que se desean registrar
+     * @return true si el usuario fue insertado correctamente;
+     *         false si no se realizó la inserción
+     */
     public boolean insertar(Usuario usuario) {
 
         String sql = """
@@ -250,6 +287,7 @@ public class UsuarioDAO {
             PreparedStatement ps = conexion.prepareStatement(sql)
         ) {
 
+            // Asigna los datos del usuario a los parámetros SQL.
             ps.setString(1, usuario.getNombre());
             ps.setString(2, usuario.getCorreo());
             ps.setString(3, usuario.getPassword());
@@ -268,11 +306,12 @@ public class UsuarioDAO {
         }
     }
 
-
-    // =========================================================
-    // BUSCAR POR ID
-    // =========================================================
-
+    /**
+     * Busca un usuario mediante su identificador.
+     *
+     * @param id identificador del usuario
+     * @return objeto Usuario si existe; null si no se encuentra
+     */
     public Usuario buscarPorId(int id) {
 
         String sql = """
@@ -317,11 +356,15 @@ public class UsuarioDAO {
         return null;
     }
 
-
-    // =========================================================
-    // ACTUALIZAR
-    // =========================================================
-
+    /**
+     * Actualiza los datos principales de un usuario.
+     *
+     * La contraseña no se modifica mediante este método.
+     *
+     * @param usuario objeto Usuario con los datos actualizados
+     * @return true si se actualizó el usuario;
+     *         false si no se realizó ninguna actualización
+     */
     public boolean actualizar(Usuario usuario) {
 
         String sql = """
@@ -356,11 +399,17 @@ public class UsuarioDAO {
         }
     }
 
-
-    // =========================================================
-    // ELIMINAR
-    // =========================================================
-
+    /**
+     * Elimina un usuario de la base de datos mediante su ID.
+     *
+     * Las validaciones relacionadas con permisos, usuario actual
+     * y protección del último administrador se realizan en la capa
+     * de servlet antes de ejecutar esta operación.
+     *
+     * @param id identificador del usuario que se desea eliminar
+     * @return true si el usuario fue eliminado;
+     *         false si no se encontró el registro
+     */
     public boolean eliminar(int id) {
 
         String sql = """

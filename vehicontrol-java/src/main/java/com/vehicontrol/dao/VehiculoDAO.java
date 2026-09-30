@@ -9,11 +9,25 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO (Data Access Object) encargado de gestionar las operaciones
+ * relacionadas con los vehículos registrados en el sistema VEHICONTROL.
+ *
+ * Esta clase permite consultar, insertar, actualizar, eliminar y
+ * validar vehículos almacenados en la base de datos.
+ *
+ * @author Duvan Arias
+ */
 public class VehiculoDAO {
 
-    // ==========================================
-    // LISTAR VEHÍCULOS
-    // ==========================================
+    /**
+     * Obtiene todos los vehículos registrados en la base de datos.
+     *
+     * Los registros se ordenan de forma descendente utilizando
+     * el identificador del vehículo.
+     *
+     * @return lista de vehículos registrados
+     */
     public List<Vehiculo> listar() {
 
         List<Vehiculo> lista = new ArrayList<>();
@@ -30,6 +44,7 @@ public class VehiculoDAO {
             ResultSet rs = ps.executeQuery()
         ) {
 
+            // Recorre los registros obtenidos de la base de datos.
             while (rs.next()) {
 
                 Vehiculo vehiculo = new Vehiculo();
@@ -57,10 +72,15 @@ public class VehiculoDAO {
         return lista;
     }
 
-
-    // ==========================================
-    // VERIFICAR SI EXISTE UNA PLACA
-    // ==========================================
+    /**
+     * Verifica si una placa ya se encuentra registrada.
+     *
+     * La comparación ignora espacios al inicio y al final
+     * y no diferencia entre mayúsculas y minúsculas.
+     *
+     * @param placa placa que se desea verificar
+     * @return true si la placa existe; false en caso contrario
+     */
     public boolean existePlaca(String placa) {
 
         String sql = """
@@ -95,10 +115,17 @@ public class VehiculoDAO {
         return false;
     }
 
-
-    // ==========================================
-    // VERIFICAR PLACA EXCEPTO UN ID
-    // ==========================================
+    /**
+     * Verifica si una placa pertenece a otro vehículo.
+     *
+     * Este método se utiliza durante la edición de un vehículo
+     * para evitar que dos registros tengan la misma placa.
+     *
+     * @param placa placa que se desea verificar
+     * @param id identificador del vehículo que se debe excluir
+     * @return true si la placa pertenece a otro vehículo;
+     *         false en caso contrario
+     */
     public boolean existePlacaExceptoId(
             String placa,
             int id) {
@@ -137,10 +164,13 @@ public class VehiculoDAO {
         return false;
     }
 
-
-    // ==========================================
-    // INSERTAR VEHÍCULO
-    // ==========================================
+    /**
+     * Inserta un nuevo vehículo en la base de datos.
+     *
+     * @param vehiculo objeto Vehiculo con los datos que se desean registrar
+     * @return true si el vehículo fue insertado correctamente;
+     *         false si no se realizó la inserción
+     */
     public boolean insertar(Vehiculo vehiculo) {
 
         String sql = """
@@ -154,6 +184,7 @@ public class VehiculoDAO {
             PreparedStatement ps = conexion.prepareStatement(sql)
         ) {
 
+            // Asigna los datos del vehículo a los parámetros SQL.
             ps.setString(
                     1,
                     vehiculo.getPlaca()
@@ -198,10 +229,12 @@ public class VehiculoDAO {
         }
     }
 
-
-    // ==========================================
-    // BUSCAR VEHÍCULO POR ID
-    // ==========================================
+    /**
+     * Busca un vehículo mediante su identificador.
+     *
+     * @param id identificador del vehículo
+     * @return objeto Vehiculo si existe; null si no se encuentra
+     */
     public Vehiculo buscarPorId(int id) {
 
         String sql = """
@@ -267,10 +300,17 @@ public class VehiculoDAO {
         return null;
     }
 
-
-    // ==========================================
-    // ACTUALIZAR VEHÍCULO
-    // ==========================================
+    /**
+     * Actualiza los datos principales de un vehículo.
+     *
+     * El estado del vehículo no se modifica mediante este método,
+     * ya que su control se realiza mediante los movimientos
+     * de entrada y salida.
+     *
+     * @param vehiculo objeto Vehiculo con los datos actualizados
+     * @return true si el vehículo fue actualizado;
+     *         false si no se realizó ninguna actualización
+     */
     public boolean actualizar(Vehiculo vehiculo) {
 
         String sql = """
@@ -330,10 +370,13 @@ public class VehiculoDAO {
         }
     }
 
-
-    // ==========================================
-    // ELIMINAR VEHÍCULO
-    // ==========================================
+    /**
+     * Elimina un vehículo de la base de datos.
+     *
+     * @param id identificador del vehículo que se desea eliminar
+     * @return true si el vehículo fue eliminado;
+     *         false si no se encontró el registro
+     */
     public boolean eliminar(int id) {
 
         String sql = """

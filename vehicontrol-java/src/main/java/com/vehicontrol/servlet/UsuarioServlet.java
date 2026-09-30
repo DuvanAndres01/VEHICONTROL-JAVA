@@ -14,17 +14,44 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Servlet encargado de gestionar los usuarios del sistema
+ * VEHICONTROL.
+ *
+ * Permite realizar las siguientes operaciones:
+ * - Listar usuarios.
+ * - Consultar un usuario para editarlo.
+ * - Registrar nuevos usuarios.
+ * - Actualizar usuarios existentes.
+ * - Eliminar usuarios.
+ * - Validar correos electrónicos.
+ * - Validar roles y estados.
+ * - Proteger al último administrador del sistema.
+ * - Evitar que el usuario elimine su propia sesión.
+ *
+ * URL:
+ * /usuarios
+ *
+ * @author Duvan Arias
+ */
 @WebServlet("/usuarios")
 public class UsuarioServlet extends HttpServlet {
 
+    /**
+     * DAO utilizado para consultar y modificar
+     * la información de los usuarios.
+     */
     private final UsuarioDAO usuarioDAO =
             new UsuarioDAO();
 
-
-    // =========================================================
-    // VERIFICAR SESIÓN
-    // =========================================================
-
+    /**
+     * Verifica si existe una sesión activa con un usuario
+     * autenticado en el sistema.
+     *
+     * @param request solicitud HTTP actual
+     * @return true si existe un usuario autenticado;
+     *         false en caso contrario
+     */
     private boolean usuarioAutenticado(
             HttpServletRequest request) {
 
@@ -35,18 +62,25 @@ public class UsuarioServlet extends HttpServlet {
                 && session.getAttribute("usuario") != null;
     }
 
-
-    // =========================================================
-    // GET
-    // =========================================================
-
+    /**
+     * Atiende las solicitudes GET del módulo de usuarios.
+     *
+     * Dependiendo del parámetro "accion", permite editar,
+     * eliminar o listar usuarios.
+     *
+     * @param request solicitud HTTP
+     * @param response respuesta HTTP
+     * @throws ServletException si ocurre un error durante
+     *         el procesamiento
+     * @throws IOException si ocurre un error de entrada o salida
+     */
     @Override
     protected void doGet(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-
+        // Verifica que exista una sesión autenticada.
         if (!usuarioAutenticado(request)) {
 
             response.sendRedirect(
@@ -57,10 +91,9 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
+        // Obtiene la acción solicitada desde la URL.
         String accion =
                 request.getParameter("accion");
-
 
         // =====================================================
         // EDITAR
@@ -71,7 +104,7 @@ public class UsuarioServlet extends HttpServlet {
             String idParametro =
                     request.getParameter("id");
 
-
+            // Verifica que se haya enviado un identificador.
             if (idParametro == null ||
                 idParametro.isBlank()) {
 
@@ -83,17 +116,17 @@ public class UsuarioServlet extends HttpServlet {
                 return;
             }
 
-
             try {
 
+                // Convierte el ID recibido a entero.
                 int id =
                         Integer.parseInt(idParametro);
 
-
+                // Busca el usuario en la base de datos.
                 Usuario usuario =
                         usuarioDAO.buscarPorId(id);
 
-
+                // Comprueba que el usuario exista.
                 if (usuario == null) {
 
                     response.sendRedirect(
@@ -104,13 +137,13 @@ public class UsuarioServlet extends HttpServlet {
                     return;
                 }
 
-
+                // Envía el usuario a la vista de edición.
                 request.setAttribute(
                         "usuario",
                         usuario
                 );
 
-
+                // Muestra el formulario de edición.
                 request.getRequestDispatcher(
                         "/editarUsuario.jsp"
                 ).forward(
@@ -122,6 +155,7 @@ public class UsuarioServlet extends HttpServlet {
 
             } catch (NumberFormatException e) {
 
+                // El identificador recibido no tiene un formato válido.
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/usuarios?error=ID_INVALIDO"
@@ -130,7 +164,6 @@ public class UsuarioServlet extends HttpServlet {
                 return;
             }
         }
-
 
         // =====================================================
         // ELIMINAR
@@ -141,7 +174,7 @@ public class UsuarioServlet extends HttpServlet {
             String idParametro =
                     request.getParameter("id");
 
-
+            // Verifica que se haya enviado un identificador.
             if (idParametro == null ||
                 idParametro.isBlank()) {
 
@@ -153,17 +186,17 @@ public class UsuarioServlet extends HttpServlet {
                 return;
             }
 
-
             try {
 
+                // Convierte el ID recibido a entero.
                 int id =
                         Integer.parseInt(idParametro);
 
-
+                // Busca el usuario antes de eliminarlo.
                 Usuario usuario =
                         usuarioDAO.buscarPorId(id);
 
-
+                // Verifica que el usuario exista.
                 if (usuario == null) {
 
                     response.sendRedirect(
@@ -174,19 +207,25 @@ public class UsuarioServlet extends HttpServlet {
                     return;
                 }
 
-
                 // =============================================
                 // NO ELIMINAR EL USUARIO DE LA SESIÓN
                 // =============================================
 
+                /*
+                 * Obtiene la sesión actual para comprobar
+                 * si el usuario que se desea eliminar es
+                 * el mismo usuario que inició sesión.
+                 */
                 HttpSession session =
                         request.getSession(false);
-
 
                 Usuario usuarioSesion =
                         (Usuario) session.getAttribute("usuario");
 
-
+                /*
+                 * Evita que un usuario pueda eliminar
+                 * su propia cuenta mientras está autenticado.
+                 */
                 if (usuarioSesion != null
                         && usuarioSesion.getId() == id) {
 
@@ -198,17 +237,20 @@ public class UsuarioServlet extends HttpServlet {
                     return;
                 }
 
-
                 // =============================================
                 // PROTEGER EL ÚLTIMO ADMINISTRADOR
                 // =============================================
 
+                /*
+                 * Si el usuario es administrador, se comprueba
+                 * que exista al menos otro administrador antes
+                 * de permitir su eliminación.
+                 */
                 if ("admin".equalsIgnoreCase(
                         usuario.getRol())) {
 
                     int administradores =
                             usuarioDAO.contarAdministradores();
-
 
                     if (administradores <= 1) {
 
@@ -221,10 +263,10 @@ public class UsuarioServlet extends HttpServlet {
                     }
                 }
 
-
+                // Elimina el usuario mediante el DAO.
                 usuarioDAO.eliminar(id);
 
-
+                // Redirige mostrando que la operación fue exitosa.
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/usuarios?guardado=true"
@@ -232,9 +274,9 @@ public class UsuarioServlet extends HttpServlet {
 
                 return;
 
-
             } catch (NumberFormatException e) {
 
+                // Maneja un ID que no tenga formato numérico.
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/usuarios?error=ID_INVALIDO"
@@ -244,6 +286,7 @@ public class UsuarioServlet extends HttpServlet {
 
             } catch (RuntimeException e) {
 
+                // Maneja errores ocurridos durante la eliminación.
                 response.sendRedirect(
                         request.getContextPath()
                                 + "/usuarios?error=ERROR_ELIMINAR"
@@ -253,21 +296,21 @@ public class UsuarioServlet extends HttpServlet {
             }
         }
 
-
         // =====================================================
         // LISTAR
         // =====================================================
 
+        // Obtiene todos los usuarios registrados.
         List<Usuario> usuarios =
                 usuarioDAO.listar();
 
-
+        // Envía la lista a la vista.
         request.setAttribute(
                 "usuarios",
                 usuarios
         );
 
-
+        // Muestra la página principal de usuarios.
         request.getRequestDispatcher(
                 "/usuarios.jsp"
         ).forward(
@@ -276,18 +319,26 @@ public class UsuarioServlet extends HttpServlet {
         );
     }
 
-
-    // =========================================================
-    // POST
-    // =========================================================
-
+    /**
+     * Atiende las solicitudes POST utilizadas para crear
+     * o actualizar usuarios.
+     *
+     * La operación se determina mediante el parámetro
+     * "accion" recibido desde el formulario.
+     *
+     * @param request solicitud HTTP
+     * @param response respuesta HTTP
+     * @throws ServletException si ocurre un error durante
+     *         el procesamiento
+     * @throws IOException si ocurre un error de entrada o salida
+     */
     @Override
     protected void doPost(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-
+        // Verifica la sesión del usuario.
         if (!usuarioAutenticado(request)) {
 
             response.sendRedirect(
@@ -298,15 +349,14 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
+        // Permite procesar correctamente caracteres especiales.
         request.setCharacterEncoding("UTF-8");
 
-
+        // Obtiene y limpia la acción enviada por el formulario.
         String accion =
                 limpiar(
                         request.getParameter("accion")
                 );
-
 
         // =====================================================
         // ACTUALIZAR
@@ -322,7 +372,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         // =====================================================
         // CREAR
         // =====================================================
@@ -333,46 +382,46 @@ public class UsuarioServlet extends HttpServlet {
         );
     }
 
-
-    // =========================================================
-    // CREAR USUARIO
-    // =========================================================
-
+    /**
+     * Registra un nuevo usuario después de validar
+     * todos los datos recibidos desde el formulario.
+     *
+     * @param request solicitud HTTP
+     * @param response respuesta HTTP
+     * @throws ServletException si ocurre un error al mostrar
+     *         la vista
+     * @throws IOException si ocurre un error de entrada o salida
+     */
     private void crearUsuario(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-
+        // Obtiene los datos enviados por el formulario.
         String nombre =
                 limpiar(
                         request.getParameter("nombre")
                 );
-
 
         String correo =
                 limpiar(
                         request.getParameter("correo")
                 );
 
-
         String password =
                 limpiar(
                         request.getParameter("password")
                 );
-
 
         String rol =
                 limpiar(
                         request.getParameter("rol")
                 );
 
-
         String estado =
                 limpiar(
                         request.getParameter("estado")
                 );
-
 
         // =====================================================
         // VALIDAR NOMBRE
@@ -389,7 +438,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         if (nombre.length() > 100) {
 
             mostrarErrorNuevoUsuario(
@@ -400,7 +448,6 @@ public class UsuarioServlet extends HttpServlet {
 
             return;
         }
-
 
         // =====================================================
         // VALIDAR CORREO
@@ -417,7 +464,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         if (!correoValido(correo)) {
 
             mostrarErrorNuevoUsuario(
@@ -429,7 +475,10 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
+        /*
+         * Comprueba que no exista otro usuario registrado
+         * con el mismo correo electrónico.
+         */
         if (usuarioDAO.existeCorreo(correo)) {
 
             mostrarErrorNuevoUsuario(
@@ -442,7 +491,6 @@ public class UsuarioServlet extends HttpServlet {
 
             return;
         }
-
 
         // =====================================================
         // VALIDAR CONTRASEÑA
@@ -459,7 +507,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         if (password.length() < 6) {
 
             mostrarErrorNuevoUsuario(
@@ -470,7 +517,6 @@ public class UsuarioServlet extends HttpServlet {
 
             return;
         }
-
 
         // =====================================================
         // VALIDAR ROL
@@ -487,7 +533,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         // =====================================================
         // VALIDAR ESTADO
         // =====================================================
@@ -503,14 +548,16 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         // =====================================================
         // CREAR USUARIO
         // =====================================================
 
+        /*
+         * Construye el objeto Usuario con los datos
+         * previamente validados.
+         */
         Usuario usuario =
                 new Usuario();
-
 
         usuario.setNombre(nombre);
         usuario.setCorreo(correo);
@@ -518,20 +565,20 @@ public class UsuarioServlet extends HttpServlet {
         usuario.setRol(rol.toLowerCase());
         usuario.setEstado(estado.toLowerCase());
 
-
         try {
 
+            // Inserta el nuevo usuario en la base de datos.
             usuarioDAO.insertar(usuario);
 
-
+            // Redirige al listado después de guardar.
             response.sendRedirect(
                     request.getContextPath()
                             + "/usuarios?guardado=true"
             );
 
-
         } catch (RuntimeException e) {
 
+            // Muestra un mensaje si ocurre un error durante el registro.
             mostrarErrorNuevoUsuario(
                     request,
                     response,
@@ -540,22 +587,25 @@ public class UsuarioServlet extends HttpServlet {
         }
     }
 
-
-    // =========================================================
-    // ACTUALIZAR USUARIO
-    // =========================================================
-
+    /**
+     * Actualiza la información de un usuario existente.
+     *
+     * @param request solicitud HTTP
+     * @param response respuesta HTTP
+     * @throws ServletException si ocurre un error al mostrar
+     *         la vista
+     * @throws IOException si ocurre un error de entrada o salida
+     */
     private void actualizarUsuario(
             HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
-
+        // Obtiene y limpia el ID del usuario.
         String idParametro =
                 limpiar(
                         request.getParameter("id")
                 );
-
 
         if (idParametro.isEmpty()) {
 
@@ -567,12 +617,11 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         int id;
-
 
         try {
 
+            // Convierte el ID a entero.
             id =
                     Integer.parseInt(idParametro);
 
@@ -586,10 +635,9 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
+        // Busca el usuario que será actualizado.
         Usuario existente =
                 usuarioDAO.buscarPorId(id);
-
 
         if (existente == null) {
 
@@ -601,30 +649,26 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
+        // Obtiene los nuevos datos del formulario.
         String nombre =
                 limpiar(
                         request.getParameter("nombre")
                 );
-
 
         String correo =
                 limpiar(
                         request.getParameter("correo")
                 );
 
-
         String rol =
                 limpiar(
                         request.getParameter("rol")
                 );
 
-
         String estado =
                 limpiar(
                         request.getParameter("estado")
                 );
-
 
         // =====================================================
         // VALIDAR NOMBRE
@@ -642,7 +686,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         if (nombre.length() > 100) {
 
             mostrarErrorEditarUsuario(
@@ -654,7 +697,6 @@ public class UsuarioServlet extends HttpServlet {
 
             return;
         }
-
 
         // =====================================================
         // VALIDAR CORREO
@@ -672,7 +714,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         if (!correoValido(correo)) {
 
             mostrarErrorEditarUsuario(
@@ -685,7 +726,10 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
+        /*
+         * Comprueba que el correo no pertenezca a otro
+         * usuario diferente al que se está editando.
+         */
         if (usuarioDAO.existeCorreoExceptoId(
                 correo,
                 id)) {
@@ -701,7 +745,6 @@ public class UsuarioServlet extends HttpServlet {
 
             return;
         }
-
 
         // =====================================================
         // VALIDAR ROL
@@ -719,7 +762,6 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         // =====================================================
         // VALIDAR ESTADO
         // =====================================================
@@ -736,26 +778,26 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-
         // =====================================================
         // PROTEGER ÚLTIMO ADMINISTRADOR
         // =====================================================
 
+        /*
+         * Si el usuario actual es administrador, se evita
+         * que el sistema quede sin administradores.
+         */
         if ("admin".equalsIgnoreCase(existente.getRol())) {
 
             boolean dejaDeSerAdmin =
                     !"admin".equalsIgnoreCase(rol);
 
-
             boolean quedaInactivo =
                     !"activo".equalsIgnoreCase(estado);
-
 
             if (dejaDeSerAdmin || quedaInactivo) {
 
                 int administradores =
                         usuarioDAO.contarAdministradores();
-
 
                 if (administradores <= 1) {
 
@@ -771,14 +813,15 @@ public class UsuarioServlet extends HttpServlet {
             }
         }
 
-
         // =====================================================
         // ACTUALIZAR
         // =====================================================
 
+        /*
+         * Construye el objeto con la información actualizada.
+         */
         Usuario usuario =
                 new Usuario();
-
 
         usuario.setId(id);
         usuario.setNombre(nombre);
@@ -786,17 +829,16 @@ public class UsuarioServlet extends HttpServlet {
         usuario.setRol(rol.toLowerCase());
         usuario.setEstado(estado.toLowerCase());
 
-
         try {
 
+            // Actualiza el usuario mediante el DAO.
             usuarioDAO.actualizar(usuario);
 
-
+            // Redirige al listado después de actualizar.
             response.sendRedirect(
                     request.getContextPath()
                             + "/usuarios?guardado=true"
             );
-
 
         } catch (RuntimeException e) {
 
@@ -809,11 +851,13 @@ public class UsuarioServlet extends HttpServlet {
         }
     }
 
-
-    // =========================================================
-    // VALIDAR CORREO
-    // =========================================================
-
+    /**
+     * Valida el formato básico de un correo electrónico.
+     *
+     * @param correo correo electrónico a validar
+     * @return true si cumple el patrón establecido;
+     *         false en caso contrario
+     */
     private boolean correoValido(
             String correo) {
 
@@ -824,11 +868,12 @@ public class UsuarioServlet extends HttpServlet {
                 .matches(regex, correo);
     }
 
-
-    // =========================================================
-    // VALIDAR ROL
-    // =========================================================
-
+    /**
+     * Valida los roles permitidos dentro del sistema.
+     *
+     * @param rol rol que se desea validar
+     * @return true para los roles admin o vigilante
+     */
     private boolean rolValido(
             String rol) {
 
@@ -836,11 +881,12 @@ public class UsuarioServlet extends HttpServlet {
                 || "vigilante".equalsIgnoreCase(rol);
     }
 
-
-    // =========================================================
-    // VALIDAR ESTADO
-    // =========================================================
-
+    /**
+     * Valida los estados permitidos para un usuario.
+     *
+     * @param estado estado que se desea validar
+     * @return true para los estados activo o inactivo
+     */
     private boolean estadoValido(
             String estado) {
 
@@ -848,11 +894,15 @@ public class UsuarioServlet extends HttpServlet {
                 || "inactivo".equalsIgnoreCase(estado);
     }
 
-
-    // =========================================================
-    // LIMPIAR
-    // =========================================================
-
+    /**
+     * Limpia un valor recibido desde una solicitud HTTP.
+     *
+     * Si el valor es null, devuelve una cadena vacía.
+     * En caso contrario, elimina espacios al inicio y al final.
+     *
+     * @param valor texto recibido desde el formulario
+     * @return valor limpio
+     */
     private String limpiar(
             String valor) {
 
@@ -863,48 +913,52 @@ public class UsuarioServlet extends HttpServlet {
         return valor.trim();
     }
 
-
-    // =========================================================
-    // ERROR NUEVO USUARIO
-    // =========================================================
-
+    /**
+     * Envía un mensaje de error al formulario de creación
+     * de usuarios y conserva algunos valores introducidos
+     * anteriormente por el usuario.
+     *
+     * @param request solicitud HTTP
+     * @param response respuesta HTTP
+     * @param mensaje mensaje que será mostrado
+     * @throws ServletException si ocurre un error al cargar
+     *         la vista
+     * @throws IOException si ocurre un error de entrada o salida
+     */
     private void mostrarErrorNuevoUsuario(
             HttpServletRequest request,
             HttpServletResponse response,
             String mensaje)
             throws ServletException, IOException {
 
-
+        // Envía el mensaje de error a la vista.
         request.setAttribute(
                 "error",
                 mensaje
         );
 
-
+        // Conserva los datos introducidos anteriormente.
         request.setAttribute(
                 "nombreAnterior",
                 request.getParameter("nombre")
         );
-
 
         request.setAttribute(
                 "correoAnterior",
                 request.getParameter("correo")
         );
 
-
         request.setAttribute(
                 "rolAnterior",
                 request.getParameter("rol")
         );
-
 
         request.setAttribute(
                 "estadoAnterior",
                 request.getParameter("estado")
         );
 
-
+        // Regresa al formulario de creación.
         request.getRequestDispatcher(
                 "/nuevoUsuario.jsp"
         ).forward(
@@ -913,11 +967,18 @@ public class UsuarioServlet extends HttpServlet {
         );
     }
 
-
-    // =========================================================
-    // ERROR EDITAR USUARIO
-    // =========================================================
-
+    /**
+     * Envía un mensaje de error al formulario de edición
+     * y conserva la información del usuario consultado.
+     *
+     * @param request solicitud HTTP
+     * @param response respuesta HTTP
+     * @param usuario usuario que se está editando
+     * @param mensaje mensaje que será mostrado
+     * @throws ServletException si ocurre un error al cargar
+     *         la vista
+     * @throws IOException si ocurre un error de entrada o salida
+     */
     private void mostrarErrorEditarUsuario(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -925,19 +986,19 @@ public class UsuarioServlet extends HttpServlet {
             String mensaje)
             throws ServletException, IOException {
 
-
+        // Envía el mensaje de error a la vista.
         request.setAttribute(
                 "error",
                 mensaje
         );
 
-
+        // Conserva el usuario para volver a mostrar sus datos.
         request.setAttribute(
                 "usuario",
                 usuario
         );
 
-
+        // Regresa al formulario de edición.
         request.getRequestDispatcher(
                 "/editarUsuario.jsp"
         ).forward(

@@ -7,11 +7,29 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+/**
+ * DAO (Data Access Object) encargado de gestionar las operaciones
+ * de acceso a datos relacionadas con la configuración del sistema.
+ *
+ * Esta clase permite consultar y actualizar la información almacenada
+ * en la tabla configuracion de la base de datos VEHICONTROL.
+ *
+ * @author Duvan Arias
+ */
 public class ConfiguracionDAO {
 
-
+    /**
+     * Obtiene la configuración principal almacenada en la base de datos.
+     *
+     * La consulta obtiene el primer registro de configuración ordenado
+     * por su identificador.
+     *
+     * @return objeto Configuracion con los datos encontrados,
+     *         o null si no existe ningún registro.
+     */
     public Configuracion obtener() {
 
+        // Consulta SQL para obtener la configuración principal.
         String sql = """
                 SELECT
                     id,
@@ -33,19 +51,23 @@ public class ConfiguracionDAO {
                 LIMIT 1
                 """;
 
-
         try (
+            // Establece la conexión con la base de datos.
             Connection conexion = Conexion.conectar();
 
+            // Prepara la consulta SQL.
             PreparedStatement ps =
                     conexion.prepareStatement(sql);
 
+            // Ejecuta la consulta.
             ResultSet rs =
                     ps.executeQuery()
         ) {
 
+            // Verifica si existe un registro de configuración.
             if (rs.next()) {
 
+                // Crea el objeto que almacenará la información.
                 Configuracion configuracion =
                         new Configuracion();
 
@@ -105,11 +127,14 @@ public class ConfiguracionDAO {
                         rs.getString("formato_fecha")
                 );
 
+                // Devuelve la configuración obtenida.
                 return configuracion;
             }
 
         } catch (Exception e) {
 
+            // Convierte el error en una excepción de ejecución
+            // para informar el problema a la capa superior.
             throw new RuntimeException(
                     "ERROR AL CONSULTAR CONFIGURACIÓN: "
                     + e.getMessage(),
@@ -117,13 +142,25 @@ public class ConfiguracionDAO {
             );
         }
 
+        // Se retorna null cuando no existe configuración.
         return null;
     }
 
-
+    /**
+     * Actualiza la configuración existente en la base de datos.
+     *
+     * Los valores se establecen mediante parámetros preparados
+     * para evitar la construcción directa de datos dentro
+     * de la consulta SQL.
+     *
+     * @param configuracion objeto con los nuevos valores
+     * @return true si se actualizó al menos un registro;
+     *         false si no se realizó ninguna actualización.
+     */
     public boolean actualizar(
             Configuracion configuracion) {
 
+        // Consulta SQL utilizada para actualizar la configuración.
         String sql = """
                 UPDATE configuracion
                 SET
@@ -143,14 +180,16 @@ public class ConfiguracionDAO {
                 WHERE id = ?
                 """;
 
-
         try (
+            // Establece la conexión con la base de datos.
             Connection conexion = Conexion.conectar();
 
+            // Prepara la consulta de actualización.
             PreparedStatement ps =
                     conexion.prepareStatement(sql)
         ) {
 
+            // Asigna los valores del objeto a los parámetros SQL.
             ps.setString(
                     1,
                     configuracion.getNombreConjunto()
@@ -221,12 +260,12 @@ public class ConfiguracionDAO {
                     configuracion.getId()
             );
 
-
+            // Ejecuta la actualización y verifica si afectó registros.
             return ps.executeUpdate() > 0;
-
 
         } catch (Exception e) {
 
+            // Informa cualquier error producido durante la actualización.
             throw new RuntimeException(
                     "ERROR AL ACTUALIZAR CONFIGURACIÓN: "
                     + e.getMessage(),
