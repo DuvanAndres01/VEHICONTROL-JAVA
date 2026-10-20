@@ -1,74 +1,37 @@
-# VEHICONTROL
+# Vehicontrol API — GA7-220501096-AA5-EV03
 
-## Evidencia GA7-220501096-AA3-EV01
+API REST local para las funciones principales del proyecto formativo Vehicontrol. Está desarrollada en Java 17 usando el servidor HTTP incluido en el JDK, sin dependencias externas.
 
-### Codificación de módulos del software stand-alone, web y móvil
+## Requisitos y ejecución
 
-VEHICONTROL es un sistema web desarrollado para gestionar el control de entrada y salida de vehículos en un conjunto residencial.
+- JDK 17 o superior.
+- Maven 3.8 o superior.
 
-El proyecto permite registrar vehículos, controlar sus movimientos de entrada y salida, administrar usuarios y consultar información del sistema.
+Desde esta carpeta, compilar y ejecutar:
 
-## Tecnologías utilizadas
+```powershell
+mvn clean package
+java -jar target/vehicontrol-api-1.0.0.jar
+```
 
-- Java 17
-- Jakarta Servlet
-- JSP
-- Maven
-- Apache Tomcat
-- MySQL
-- HTML5
-- CSS3
-- JavaScript
-- Git
-- GitHub
+La API queda disponible en `http://127.0.0.1:8081/api`. Para cambiar el puerto, define la variable de entorno `PORT` antes de iniciar. La documentación completa de cada servicio está en [`DOCUMENTACION_API.md`](DOCUMENTACION_API.md), y el contrato OpenAPI se encuentra en [`openapi.yaml`](openapi.yaml).
 
-## Módulos desarrollados
+## Recursos
 
-El sistema cuenta con los siguientes módulos:
+| Recurso | Servicios |
+|---|---|
+| Vehículos | Listar, crear, consultar, actualizar y eliminar |
+| Usuarios | Listar, crear, consultar, actualizar y eliminar |
+| Movimientos | Registrar entrada/salida y consultar historial |
+| Configuración | Consultar y ajustar la capacidad del parqueadero |
+| Salud | Verificar disponibilidad del servicio |
 
-- Inicio de sesión
-- Dashboard
-- Registro de vehículos
-- Edición de vehículos
-- Eliminación de vehículos
-- Registro de entrada y salida
-- Historial de movimientos
-- Administración de usuarios
-- Configuración del sistema
+## Versionamiento
 
-## Arquitectura
+Repositorio: <https://github.com/DuvanAndres01/VEHICONTROL-JAVA>
 
-El proyecto utiliza una arquitectura basada en:
+Rama de trabajo de esta evidencia: `aa5-ev03-vehicontrol-api`.
 
-- **Model:** clases que representan las entidades del sistema.
-- **DAO:** clases encargadas de la comunicación con la base de datos.
-- **Servlet:** controladores encargados de recibir y procesar las solicitudes.
-- **JSP:** vistas utilizadas para la interfaz web.
-- **MySQL:** sistema gestor de base de datos.
+## Alcance del prototipo
 
-### Estructura principal
-
-```text
-src/main/java/com/vehicontrol/
-├── config/
-│   └── Conexion.java
-├── dao/
-│   ├── ConfiguracionDAO.java
-│   ├── MovimientoDAO.java
-│   ├── UsuarioDAO.java
-│   └── VehiculoDAO.java
-├── model/
-│   ├── Configuracion.java
-│   ├── Movimiento.java
-│   ├── Usuario.java
-│   └── Vehiculo.java
-└── servlet/
-    ├── ConfiguracionServlet.java
-    ├── DashboardServlet.java
-    ├── HistorialServlet.java
-    ├── LoginServlet.java
-    ├── LogoutServlet.java
-    ├── MovimientoServlet.java
-    ├── NuevoVehiculoServlet.java
-    ├── UsuarioServlet.java
-    └── VehiculoServlet.java
+Los datos se guardan en memoria mientras el proceso está activo y se reinician al cerrar la API. Esta versión permite demostrar las operaciones y reglas principales; para producción se debe integrar almacenamiento persistente con la base de datos, autenticar y autorizar cada solicitud, y configurar HTTPS.

@@ -605,68 +605,46 @@
                                 required>
 
                                 <option value="admin"
-                                    <% if ("admin".equals(usuario.getRol())) { %>
-                                        selected
-                                    <% } %>>
-
+                                    ${usuario.rol == 'admin' ? 'selected' : ''}>
                                     Administrador
-
                                 </option>
 
                                 <option value="vigilante"
-                                    <% if ("vigilante".equals(usuario.getRol())) { %>
-                                        selected
-                                    <% } %>>
-
+                                    ${usuario.rol == 'vigilante' ? 'selected' : ''}>
                                     Vigilante
-
                                 </option>
 
                             </select>
 
-                        </div>
+                            </div>
 
+                            <!-- ESTADO -->
 
-                        <!-- ESTADO -->
+                            <div class="col-md-6 mb-4">
 
-                        <div class="col-md-6 mb-4">
+                                <label for="estado" class="form-label">
+                                    Estado
+                                </label>
 
-                            <label
-                                for="estado"
-                                class="form-label">
+                                <select
+                                    id="estado"
+                                    name="estado"
+                                    class="form-select"
+                                    required>
 
-                                Estado
+                                    <option value="activo"
+                                        ${usuario.estado == 'activo' ? 'selected' : ''}>
+                                        Activo
+                                    </option>
 
-                            </label>
+                                    <option value="inactivo"
+                                        ${usuario.estado == 'inactivo' ? 'selected' : ''}>
+                                        Inactivo
+                                    </option>
 
-                            <select
-                                id="estado"
-                                name="estado"
-                                class="form-select"
-                                required>
+                                </select>
 
-                                <option value="activo"
-                                    <% if ("activo".equals(usuario.getEstado())) { %>
-                                        selected
-                                    <% } %>>
-
-                                    Activo
-
-                                </option>
-
-                                <option value="inactivo"
-                                    <% if ("inactivo".equals(usuario.getEstado())) { %>
-                                        selected
-                                    <% } %>>
-
-                                    Inactivo
-
-                                </option>
-
-                            </select>
-
-                        </div>
-
+                            </div>
 
                         <!-- PASSWORD -->
 

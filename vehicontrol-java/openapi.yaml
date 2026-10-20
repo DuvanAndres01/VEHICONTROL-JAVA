@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: Vehicontrol API
+  version: 1.0.0
+  description: Servicios para vehículos, usuarios, movimientos de parqueo y configuración.
+servers:
+  - url: http://127.0.0.1:8081/api
+paths:
+  /health:
+    get:
+      summary: Verificar disponibilidad
+      responses:
+        '200': {description: Servicio disponible}
+  /vehicles:
+    get:
+      summary: Listar vehículos
+      responses:
+        '200': {description: Lista de vehículos}
+    post:
+      summary: Crear vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleInput'
+      responses:
+        '201': {description: Vehículo creado}
+        '400': {description: Datos inválidos}
+        '409': {description: Placa duplicada}
+  /vehicles/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: integer}
+    get:
+      summary: Consultar vehículo
+      responses:
+        '200': {description: Vehículo encontrado}
+        '404': {description: Vehículo no encontrado}
+    put:
+      summary: Actualizar vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/VehicleInput'}
+      responses:
+        '200': {description: Vehículo actualizado}
+        '400': {description: Datos inválidos}
+        '404': {description: Vehículo no encontrado}
+        '409': {description: Placa duplicada}
+    delete:
+      summary: Eliminar vehículo fuera del parqueadero
+      responses:
+        '204': {description: Vehículo eliminado}
+        '404': {description: Vehículo no encontrado}
+        '409': {description: Vehículo actualmente dentro}
+  /users:
+    get:
+      summary: Listar usuarios
+      responses:
+        '200': {description: Lista de usuarios}
+    post:
+      summary: Crear usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UserInput'}
+      responses:
+        '201': {description: Usuario creado}
+        '400': {description: Datos inválidos}
+        '409': {description: Usuario o correo duplicado}
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: integer}
+    get:
+      summary: Consultar usuario
+      responses:
+        '200': {description: Usuario encontrado}
+        '404': {description: Usuario no encontrado}
+    put:
+      summary: Actualizar usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UserInput'}
+      responses:
+        '200': {description: Usuario actualizado}
+        '400': {description: Datos inválidos}
+        '404': {description: Usuario no encontrado}
+        '409': {description: Usuario o correo duplicado}
+    delete:
+      summary: Eliminar usuario
+      responses:
+        '204': {description: Usuario eliminado}
+        '404': {description: Usuario no encontrado}
+  /movements:
+    get:
+      summary: Consultar historial de movimientos
+      parameters:
+        - in: query
+          name: tipo
+          required: false
+          schema: {type: string, enum: [ENTRADA, SALIDA]}
+      responses:
+        '200': {description: Historial de movimientos}
+  /movements/entries:
+    post:
+      summary: Registrar entrada de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/MovementInput'}
+      responses:
+        '201': {description: Entrada registrada}
+        '404': {description: Vehículo no encontrado}
+        '409': {description: Vehículo ya dentro o capacidad completa}
+  /movements/exits:
+    post:
+      summary: Registrar salida de vehículo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/MovementInput'}
+      responses:
+        '201': {description: Salida registrada}
+        '404': {description: Vehículo no encontrado}
+        '409': {description: No hay entrada pendiente}
+  /settings:
+    get:
+      summary: Consultar capacidad y ocupación
+      responses:
+        '200': {description: Configuración actual}
+    put:
+      summary: Actualizar capacidad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [capacidad]
+              properties:
+                capacidad: {type: integer, minimum: 1, maximum: 10000}
+      responses:
+        '200': {description: Configuración actualizada}
+        '400': {description: Capacidad inválida}
+        '409': {description: Capacidad menor que la ocupación}
+components:
+  schemas:
+    VehicleInput:
+      type: object
+      required: [placa, marca, modelo, color, propietario]
+      properties:
+        placa: {type: string, minLength: 5, maxLength: 10, example: ABC-123}
+        marca: {type: string, example: Renault}
+        modelo: {type: string, example: '2022'}
+        color: {type: string, example: Gris}
+        propietario: {type: string, example: Duvan Arias}
+    UserInput:
+      type: object
+      required: [usuario, correo]
+      properties:
+        usuario: {type: string, minLength: 3, maxLength: 32}
+        correo: {type: string, format: email}
+        rol: {type: string, enum: [ADMIN, OPERADOR], default: OPERADOR}
+    MovementInput:
+      type: object
+      required: [vehiculoId]
+      properties:
+        vehiculoId: {type: integer, example: 1}
+        usuario: {type: string, example: duvan01}

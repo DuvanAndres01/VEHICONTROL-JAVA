@@ -1,15 +1,4 @@
-EVIDENCIA GA7-220501096-AA2-EV02
+Repositorio del proyecto: https://github.com/DuvanAndres01/VEHICONTROL-JAVA
+Rama de esta evidencia: aa5-ev03-vehicontrol-api
 
-PROYECTO: VEHICONTROL
-
-Repositorio GitHub:
-https://github.com/DuvanAndres01/VEHICONTROL-JAVA.git
-
-Tecnologías:
-Java 17
-Jakarta Servlet
-JSP
-Maven
-Apache Tomcat
-MySQL
-Git y GitHub
+Nota: la rama debe publicarse en GitHub para que el enlace sea accesible desde el repositorio remoto.
