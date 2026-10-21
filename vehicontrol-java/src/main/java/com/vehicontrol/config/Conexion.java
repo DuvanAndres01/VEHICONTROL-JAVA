@@ -29,16 +29,21 @@ public class Conexion {
      * Permite la recuperación de la clave pública cuando
      * es requerida por el controlador MySQL.
      */
-    private static final String URL =
+    private static final String URL = System.getenv().getOrDefault(
+            "DB_URL",
             "jdbc:mysql://localhost:3306/vehicontrol_java"
-            + "?useSSL=false"
-            + "&serverTimezone=UTC"
-            + "&allowPublicKeyRetrieval=true";
+                    + "?useSSL=false"
+                    + "&serverTimezone=UTC"
+                    + "&allowPublicKeyRetrieval=true"
+    );
 
     /**
      * Usuario utilizado para conectarse a MySQL.
      */
-    private static final String USUARIO = "root";
+    private static final String USUARIO = System.getenv().getOrDefault(
+            "DB_USER",
+            "root"
+    );
 
     /**
      * Contraseña utilizada para conectarse a MySQL.
@@ -46,7 +51,10 @@ public class Conexion {
      * En el entorno local actual no se ha configurado
      * una contraseña para el usuario root.
      */
-    private static final String PASSWORD = "";
+    private static final String PASSWORD = System.getenv().getOrDefault(
+            "DB_PASSWORD",
+            ""
+    );
 
     /**
      * Establece una conexión con la base de datos VEHICONTROL.
