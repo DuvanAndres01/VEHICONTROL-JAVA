@@ -11,10 +11,10 @@
     <style>
         :root {
             color-scheme: light;
-            --navy: #102f50;
-            --navy-deep: #0b223b;
-            --blue: #2367a5;
-            --teal: #39c6b0;
+            --navy: #021b4f;
+            --navy-deep: #01153d;
+            --blue: #0d6efd;
+            --teal: #65a9ff;
             --ink: #172b40;
             --muted: #66788b;
             --line: #e5edf4;
@@ -31,7 +31,7 @@
             font-family: Inter, "Segoe UI", Arial, sans-serif;
             color: var(--ink);
             background:
-                radial-gradient(ellipse at 12% 12%, rgba(57,198,176,.13), transparent 30%),
+                radial-gradient(ellipse at 12% 12%, rgba(13,110,253,.13), transparent 30%),
                 radial-gradient(ellipse at 88% 90%, rgba(35,103,165,.13), transparent 32%),
                 #f1f5f9;
         }
@@ -54,7 +54,7 @@
             padding: 64px 58px;
             overflow: hidden;
             color: #fff;
-            background: linear-gradient(145deg, #163e64 0%, var(--navy) 55%, var(--navy-deep) 100%);
+            background: linear-gradient(135deg, #01143d 0%, #021b4f 45%, #062d68 100%);
         }
         .hero::before, .hero::after {
             position: absolute;
@@ -74,7 +74,7 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
         }
         .brand-name { font-size: 15px; font-weight: 750; letter-spacing: .13em; }
-        .eyebrow { margin: 0 0 14px; color: #8fe5d8; font-size: 11px; font-weight: 750; letter-spacing: .19em; text-transform: uppercase; }
+        .eyebrow { margin: 0 0 14px; color: #a9c4ed; font-size: 11px; font-weight: 750; letter-spacing: .19em; text-transform: uppercase; }
         .hero h1 { max-width: 390px; margin: 0; font-size: clamp(34px, 4.3vw, 49px); line-height: 1.08; letter-spacing: -.045em; }
         .hero-copy { max-width: 365px; margin: 21px 0 0; color: #c4d2df; font-size: 16px; line-height: 1.75; }
         .feature-list { display: grid; gap: 15px; margin: 39px 0 0; padding: 0; list-style: none; color: #e1ebf3; font-size: 13px; }
@@ -87,16 +87,16 @@
         .panel-copy { max-width: 350px; margin: 13px 0 31px; color: var(--muted); font-size: 15px; line-height: 1.7; }
         .login-link {
             min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 11px;
-            padding: 0 22px; color: #fff; background: linear-gradient(100deg, #1b5688, #16446f);
-            border: 1px solid rgba(16,47,80,.1); border-radius: 12px; box-shadow: 0 9px 19px rgba(22,68,111,.18);
+            padding: 0 22px; color: #fff; background: linear-gradient(100deg, #0d6efd, #0757c9);
+            border: 1px solid rgba(16,47,80,.1); border-radius: 12px; box-shadow: 0 9px 19px rgba(13,110,253,.25);
             font-size: 14px; font-weight: 700; text-decoration: none;
             transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
         }
-        .login-link:hover { color: #fff; background: linear-gradient(100deg, #236ba7, #1a5485); box-shadow: 0 12px 24px rgba(22,68,111,.24); transform: translateY(-2px); }
-        .login-link:focus-visible { outline: 3px solid rgba(57,198,176,.55); outline-offset: 4px; }
+        .login-link:hover { color: #fff; background: linear-gradient(100deg, #0b5ed7, #064bb0); box-shadow: 0 12px 24px rgba(13,110,253,.32); transform: translateY(-2px); }
+        .login-link:focus-visible { outline: 3px solid rgba(13,110,253,.45); outline-offset: 4px; }
         .login-link i:last-child { margin-left: auto; color: #a8e9df; }
         .security-note { display: flex; align-items: flex-start; gap: 12px; margin-top: 30px; padding-top: 22px; color: var(--muted); border-top: 1px solid var(--line); font-size: 12px; line-height: 1.6; }
-        .security-note i { margin-top: 2px; color: #238d83; font-size: 15px; }
+        .security-note i { margin-top: 2px; color: #28a76c; font-size: 15px; }
         .security-note strong { display: block; margin-bottom: 2px; color: #344b61; font-size: 12px; }
         .footer { padding: 17px 8px 0; color: #8493a2; font-size: 11px; text-align: center; }
         @media (max-width: 760px) {
