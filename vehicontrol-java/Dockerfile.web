@@ -2,7 +2,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /build
 COPY pom.xml .
 COPY src ./src
-RUN mvn -B -DskipTests org.apache.maven.plugins:maven-war-plugin:3.5.1:war
+RUN mvn -B -DskipTests compile org.apache.maven.plugins:maven-war-plugin:3.5.1:war
 
 FROM tomcat:10.1.60-jre17-temurin
 ENV PORT=10000
